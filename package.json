@@ -1,0 +1,18 @@
+{
+  "name": "taskscore-ios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TaskScore iOS cloud-build project",
+  "scripts": {
+    "build": "node -e \"console.log('TaskScore web assets are already in www/')\"",
+    "cap:sync": "npx cap sync ios",
+    "cap:add:ios": "npx cap add ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}
