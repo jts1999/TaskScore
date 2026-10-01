@@ -1,0 +1,69 @@
+workflows:
+  ios-unsigned-check:
+    name: TaskScore iOS Cloud Build Check
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Prepare TaskScore web assets
+        script: |
+          mkdir -p www
+          cp index.html www/index.html
+          if [ -f manifest.webmanifest ]; then cp manifest.webmanifest www/manifest.webmanifest; fi
+          test -f www/index.html
+      - name: Add iOS platform if missing
+        script: |
+          if [ ! -d "ios" ]; then npx cap add ios; fi
+      - name: Sync TaskScore web assets
+        script: |
+          npx cap sync ios
+      - name: Build unsigned iOS simulator app
+        script: |
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+    artifacts:
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/*.app
+
+  ios-testflight:
+    name: TaskScore TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: TaskScore App Store Connect
+    environment:
+      node: 22
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.taskscore.app
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Prepare TaskScore web assets
+        script: |
+          mkdir -p www
+          cp index.html www/index.html
+          if [ -f manifest.webmanifest ]; then cp manifest.webmanifest www/manifest.webmanifest; fi
+      - name: Add iOS platform if missing
+        script: |
+          if [ ! -d "ios" ]; then npx cap add ios; fi
+      - name: Sync TaskScore web assets
+        script: |
+          npx cap sync ios
+      - name: Apply signing
+        script: |
+          xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
