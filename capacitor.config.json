@@ -1,8 +1,0 @@
-{
-  "appId": "com.taskscore.productivity",
-  "appName": "TaskScore",
-  "webDir": "www",
-  "server": {
-    "iosScheme": "https"
-  }
-}
